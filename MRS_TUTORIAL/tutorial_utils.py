@@ -35,23 +35,46 @@ def use_workshop_style() -> None:
     plt.rcParams.update(
         {
             "figure.facecolor": "white",
-            "axes.facecolor": "#fbfbf8",
-            "axes.edgecolor": "#2c2c2c",
-            "axes.labelcolor": "#1f1f1f",
+            "axes.facecolor": "#fcfcfa",
+            "axes.edgecolor": "#2f3b52",
+            "axes.labelcolor": "#1f2937",
             "axes.titlesize": 14,
             "axes.titleweight": "bold",
-            "axes.labelsize": 11,
-            "xtick.color": "#1f1f1f",
-            "ytick.color": "#1f1f1f",
-            "grid.color": "#d7d7d2",
-            "grid.alpha": 0.7,
-            "font.size": 11,
+            "axes.labelsize": 11.5,
+            "axes.linewidth": 1.0,
+            "xtick.color": "#1f2937",
+            "ytick.color": "#1f2937",
+            "xtick.labelsize": 10.5,
+            "ytick.labelsize": 10.5,
+            "xtick.major.size": 4.5,
+            "ytick.major.size": 4.5,
+            "grid.color": "#d6dce5",
+            "grid.alpha": 0.6,
+            "grid.linewidth": 0.8,
+            "font.size": 11.5,
+            "font.family": "DejaVu Serif",
             "legend.frameon": True,
             "legend.facecolor": "white",
-            "legend.edgecolor": "#d8d8d8",
+            "legend.edgecolor": "#d6dce5",
+            "legend.framealpha": 0.95,
+            "lines.linewidth": 2.3,
+            "lines.markersize": 6,
+            "savefig.dpi": 300,
             "savefig.bbox": "tight",
         }
     )
+
+
+def style_axis(ax: plt.Axes, grid_axis: str = "both") -> None:
+    ax.tick_params(direction="out", length=4.5, width=0.9)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    if grid_axis == "y":
+        ax.grid(axis="y")
+    elif grid_axis == "x":
+        ax.grid(axis="x")
+    else:
+        ax.grid(True)
 
 
 def print_section(title: str) -> None:
@@ -163,15 +186,35 @@ def run_tg_analysis(
     high_idx = np.arange(len(t_use) - n, len(t_use))
     rho_tg = representative["sl_low"] * tg_mean + representative["ic_low"]
 
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.4), constrained_layout=True)
 
-    axes[0].plot(t_use, rho_use, marker="o", linewidth=2.2, color="#0f766e", label="Averaged density")
-    axes[0].scatter(t_use[low_idx], rho_use[low_idx], s=65, color="#b45309", label="Low-T fit region", zorder=3)
+    axes[0].plot(
+        t_use,
+        rho_use,
+        marker="o",
+        linewidth=2.4,
+        color="#0f766e",
+        markerfacecolor="white",
+        markeredgewidth=1.2,
+        label="Averaged density",
+    )
+    axes[0].scatter(
+        t_use[low_idx],
+        rho_use[low_idx],
+        s=70,
+        color="#c2410c",
+        edgecolors="white",
+        linewidths=0.9,
+        label="Low-T fit region",
+        zorder=3,
+    )
     axes[0].scatter(
         t_use[high_idx],
         rho_use[high_idx],
-        s=65,
-        color="#7c3aed",
+        s=70,
+        color="#6d28d9",
+        edgecolors="white",
+        linewidths=0.9,
         label="High-T fit region",
         zorder=3,
     )
@@ -179,27 +222,45 @@ def run_tg_analysis(
         t_use,
         representative["sl_low"] * t_use + representative["ic_low"],
         linestyle="--",
-        linewidth=2,
-        color="#b45309",
+        linewidth=2.2,
+        color="#c2410c",
         label=f"Low-T fit (n={n})",
     )
     axes[0].plot(
         t_use,
         representative["sl_high"] * t_use + representative["ic_high"],
         linestyle="--",
-        linewidth=2,
-        color="#7c3aed",
+        linewidth=2.2,
+        color="#6d28d9",
         label=f"High-T fit (n={n})",
     )
-    axes[0].scatter([tg_mean], [rho_tg], color="#dc2626", s=110, label=f"Tg = {tg_mean:.1f} K", zorder=4)
+    axes[0].scatter(
+        [tg_mean],
+        [rho_tg],
+        color="#dc2626",
+        edgecolors="white",
+        linewidths=1.0,
+        s=120,
+        label=f"Tg = {tg_mean:.1f} K",
+        zorder=4,
+    )
     axes[0].axvline(tg_mean, color="#dc2626", linestyle=":", linewidth=1.8)
     axes[0].set_title("Density-Temperature Crossover")
     axes[0].set_xlabel("Temperature (K)")
     axes[0].set_ylabel("Density (g/cm$^3$)")
     axes[0].legend(loc="best")
+    style_axis(axes[0])
 
-    axes[1].plot(valid_fit_sizes, tg_vals, marker="o", linewidth=2.2, color="#2563eb")
-    axes[1].axhspan(tg_mean - tg_std, tg_mean + tg_std, color="#93c5fd", alpha=0.35, label="Mean ± std")
+    axes[1].plot(
+        valid_fit_sizes,
+        tg_vals,
+        marker="o",
+        linewidth=2.4,
+        color="#1d4ed8",
+        markerfacecolor="white",
+        markeredgewidth=1.2,
+    )
+    axes[1].axhspan(tg_mean - tg_std, tg_mean + tg_std, color="#bfdbfe", alpha=0.45, label="Mean ± std")
     axes[1].axhline(tg_mean, color="#1d4ed8", linestyle="--", linewidth=2, label=f"Mean Tg = {tg_mean:.1f} K")
     axes[1].axhline(lower_bound, color="#9ca3af", linestyle=":", linewidth=1.5, label="Acceptance window")
     axes[1].axhline(upper_bound, color="#9ca3af", linestyle=":", linewidth=1.5)
@@ -207,11 +268,12 @@ def run_tg_analysis(
     axes[1].set_xlabel("Number of points in each fit")
     axes[1].set_ylabel("Estimated Tg (K)")
     axes[1].legend(loc="best")
+    style_axis(axes[1], grid_axis="y")
 
     fig.suptitle(f"Glass Transition Tutorial: {sample_name}", fontsize=16, fontweight="bold")
 
     if save_figure:
-        fig.savefig(output_dir(root) / "glass_transition_summary.png", dpi=220)
+        fig.savefig(output_dir(root) / "glass_transition_summary.png")
 
     print_section("Glass Transition Temperature")
     print(f"Sample: {sample_name}")
@@ -275,62 +337,52 @@ def run_dc_analysis(
         )
     )
 
-    sample_step = max(20, len(dipole) // 120)
-    running_x = []
-    running_eps = []
-    for end in range(200, len(dipole) + 1, sample_step):
-        running_x.append(end)
-        running_eps.append(
-            calculate_dielectric_constant_component(
-                dipole_moments=dipole[:end],
-                avg_volume_angstrom3=float(np.mean(volume[:end])),
-                temperature_k=temperature_k,
-            )
-        )
-
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.4), constrained_layout=True)
     sample_index = np.arange(len(dipole))
 
     stride = max(1, len(dipole) // 1000)
-    axes[0, 0].plot(sample_index[::stride], dipole[::stride, 0], linewidth=1.5, color="#ef4444", label="Mx")
-    axes[0, 0].plot(sample_index[::stride], dipole[::stride, 1], linewidth=1.5, color="#0ea5e9", label="My")
-    axes[0, 0].plot(sample_index[::stride], dipole[::stride, 2], linewidth=1.5, color="#10b981", label="Mz")
-    axes[0, 0].set_title("Dipole Components vs Sample")
-    axes[0, 0].set_xlabel("Sample index")
-    axes[0, 0].set_ylabel("Dipole moment (e*A)")
-    axes[0, 0].legend(loc="best")
+    axes[0].plot(sample_index[::stride], dipole[::stride, 0], color="#dc2626", linewidth=1.8, alpha=0.95, label="Mx")
+    axes[0].plot(sample_index[::stride], dipole[::stride, 1], color="#0284c7", linewidth=1.8, alpha=0.95, label="My")
+    axes[0].plot(sample_index[::stride], dipole[::stride, 2], color="#059669", linewidth=1.8, alpha=0.95, label="Mz")
+    axes[0].axhline(0.0, color="#94a3b8", linestyle=":", linewidth=1.2)
+    axes[0].set_title("Dipole-Moment Components")
+    axes[0].set_xlabel("Sample index")
+    axes[0].set_ylabel("Dipole moment (e*A)")
+    axes[0].legend(loc="upper right", ncol=3)
+    style_axis(axes[0])
 
-    axes[0, 1].hist(magnitude, bins=35, color="#8b5cf6", edgecolor="white")
-    axes[0, 1].set_title("Distribution of Total Dipole Magnitude")
-    axes[0, 1].set_xlabel("|M| (e*A)")
-    axes[0, 1].set_ylabel("Count")
-
-    axes[1, 0].plot(running_x, running_eps, color="#1d4ed8", linewidth=2.3)
-    axes[1, 0].axhline(epsilon_dipole, color="#dc2626", linestyle="--", linewidth=1.8, label=f"Final = {epsilon_dipole:.3f}")
-    axes[1, 0].set_title("Convergence of Dipolar Dielectric Constant")
-    axes[1, 0].set_xlabel("Number of samples included")
-    axes[1, 0].set_ylabel("$\\epsilon_{dipole}$")
-    axes[1, 0].legend(loc="best")
-
-    axes[1, 1].axis("off")
-    axes[1, 1].text(
-        0.0,
-        0.9,
-        "This tutorial focuses only on the dipole-fluctuation contribution.\n\n"
-        "Key takeaway:\n"
-        "- the total dipole moment fluctuates during MD\n"
-        "- the variance of that dipole is linked to dielectric response\n"
-        "- better sampling gives a more stable dielectric estimate",
-        fontsize=12,
+    axes[1].plot(
+        sample_index[::stride],
+        magnitude[::stride],
+        color="#7c3aed",
+        linewidth=2.1,
+        label="|M|",
+    )
+    axes[1].fill_between(sample_index[::stride], magnitude[::stride], color="#ddd6fe", alpha=0.55)
+    axes[1].axhline(np.mean(magnitude), color="#4c1d95", linestyle="--", linewidth=1.8, label=f"Mean |M| = {np.mean(magnitude):.2f}")
+    axes[1].set_title("Total Dipole Magnitude")
+    axes[1].set_xlabel("Sample index")
+    axes[1].set_ylabel("|M| (e*A)")
+    axes[1].legend(loc="upper right")
+    axes[1].text(
+        0.03,
+        0.95,
+        f"$\\epsilon_{{dipole}}$ = {epsilon_dipole:.3f}\n"
+        f"T = {temperature_k:.0f} K\n"
+        f"Samples = {len(dipole)}\n"
+        f"Average volume = {avg_volume_angstrom3:.1f} A$^3$",
+        transform=axes[1].transAxes,
         va="top",
         ha="left",
-        bbox={"facecolor": "#eff6ff", "edgecolor": "#93c5fd", "boxstyle": "round,pad=0.6"},
+        fontsize=11.2,
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.45"},
     )
+    style_axis(axes[1])
 
     fig.suptitle(f"Dielectric Constant Tutorial: {sample_name}", fontsize=16, fontweight="bold")
 
     if save_figure:
-        fig.savefig(output_dir(root) / "dielectric_constant_summary.png", dpi=220)
+        fig.savefig(output_dir(root) / "dielectric_constant_summary.png")
 
     print_section("Dielectric Constant")
     print(f"Sample: {sample_name}")
@@ -505,57 +557,85 @@ def run_tc_analysis(
     rep_heat = representative["heat"]
     rep_gradient = representative["gradient"]
 
-    fig, axes = plt.subplots(2, 2, figsize=(13, 9))
+    fig, axes = plt.subplots(2, 2, figsize=(13.5, 9.2), constrained_layout=True)
 
-    axes[0, 0].plot(rep_heat["time"] * 1e12, rep_heat["energy"], color="#2563eb", linewidth=2.1, label="Heat transferred")
+    axes[0, 0].plot(rep_heat["time"] * 1e12, rep_heat["energy"], color="#1d4ed8", linewidth=2.4, label="Heat transferred")
     axes[0, 0].plot(
         rep_heat["time"] * 1e12,
         rep_heat["slope"] * rep_heat["time"] + rep_heat["intercept"],
         color="#dc2626",
         linestyle="--",
-        linewidth=2.0,
+        linewidth=2.2,
         label=f"Linear fit (R = {rep_heat['r_value']:.3f})",
     )
     axes[0, 0].set_title(f"Representative Heat-Flux Fit (window {representative['window']})")
     axes[0, 0].set_xlabel("Time (ps)")
     axes[0, 0].set_ylabel("Accumulated energy (J)")
     axes[0, 0].legend(loc="best")
+    style_axis(axes[0, 0])
 
-    axes[0, 1].scatter(rep_gradient["distance"], rep_gradient["temperature"], s=30, color="#0f766e", label="Temperature profile")
+    axes[0, 1].scatter(
+        rep_gradient["distance"],
+        rep_gradient["temperature"],
+        s=34,
+        color="#0f766e",
+        edgecolors="white",
+        linewidths=0.5,
+        label="Temperature profile",
+    )
     axes[0, 1].plot(
         rep_gradient["distance"],
         rep_gradient["slope"] * rep_gradient["distance"] + rep_gradient["intercept"],
         color="#f97316",
         linestyle="--",
-        linewidth=2.0,
+        linewidth=2.2,
         label=f"Linear fit (R = {rep_gradient['r_value']:.3f})",
     )
     axes[0, 1].set_title(f"Representative Temperature Gradient (window {representative['window']})")
     axes[0, 1].set_xlabel("Reduced position")
     axes[0, 1].set_ylabel("Temperature (K)")
     axes[0, 1].legend(loc="best")
+    style_axis(axes[0, 1])
 
     window_ids = [record["window"] for record in records]
-    axes[1, 0].plot(window_ids, tc_values, marker="o", linewidth=2.2, color="#7c3aed")
-    axes[1, 0].axhspan(tc_mean - tc_std, tc_mean + tc_std, color="#ddd6fe", alpha=0.45, label="Mean ± std")
+    axes[1, 0].plot(
+        window_ids,
+        tc_values,
+        marker="o",
+        linewidth=2.4,
+        color="#7c3aed",
+        markerfacecolor="white",
+        markeredgewidth=1.2,
+    )
+    axes[1, 0].axhspan(tc_mean - tc_std, tc_mean + tc_std, color="#ddd6fe", alpha=0.5, label="Mean ± std")
     axes[1, 0].axhline(tc_mean, color="#6d28d9", linestyle="--", linewidth=1.8, label=f"Mean = {tc_mean:.4e}")
     axes[1, 0].set_title("Window-by-Window Thermal Conductivity")
     axes[1, 0].set_xlabel("Window")
     axes[1, 0].set_ylabel("Thermal conductivity")
     axes[1, 0].legend(loc="best")
+    style_axis(axes[1, 0], grid_axis="y")
 
     cumulative = np.cumsum(tc_values) / np.arange(1, len(tc_values) + 1)
-    axes[1, 1].plot(np.arange(1, len(tc_values) + 1), cumulative, marker="o", linewidth=2.2, color="#0891b2")
+    axes[1, 1].plot(
+        np.arange(1, len(tc_values) + 1),
+        cumulative,
+        marker="o",
+        linewidth=2.4,
+        color="#0f766e",
+        markerfacecolor="white",
+        markeredgewidth=1.2,
+    )
     axes[1, 1].axhline(tc_mean, color="#0f766e", linestyle="--", linewidth=1.8, label="Final mean")
     axes[1, 1].set_title("Convergence of the Running Mean")
     axes[1, 1].set_xlabel("Number of windows included")
     axes[1, 1].set_ylabel("Running mean thermal conductivity")
     axes[1, 1].legend(loc="best")
+    style_axis(axes[1, 1], grid_axis="y")
 
     fig.suptitle(f"Thermal Conductivity Tutorial: {sample_name}", fontsize=16, fontweight="bold")
 
     if save_figure:
-        fig.savefig(output_dir(root) / "thermal_conductivity_summary.png", dpi=220)
+        fig.savefig(output_dir(root) / "thermal_conductivity_summary.png")
 
     print_section("Thermal Conductivity")
     print(f"Sample: {sample_name}")
@@ -589,8 +669,8 @@ def run_cp_analysis(
     cp_path = root / cp_result_file
     cp_value = float(np.loadtxt(cp_path))
 
-    fig, ax = plt.subplots(figsize=(8.5, 5.5))
-    ax.bar(["Cp"], [cp_value], width=0.55, color="#dc2626")
+    fig, ax = plt.subplots(figsize=(8.8, 5.6), constrained_layout=True)
+    ax.bar(["Cp"], [cp_value], width=0.55, color="#b91c1c", edgecolor="#7f1d1d", linewidth=1.1)
     ax.set_ylabel("Specific heat capacity, Cp (J kg$^{-1}$ K$^{-1}$)")
     ax.set_title(f"Specific Heat Capacity Tutorial: {sample_name}")
     ax.set_ylim(0, cp_value * 1.35)
@@ -600,10 +680,10 @@ def run_cp_analysis(
         f"{cp_value:.2f} J kg$^{{-1}}$ K$^{{-1}}$",
         ha="center",
         va="bottom",
-        fontsize=13,
+        fontsize=13.5,
         fontweight="bold",
     )
-    ax.grid(axis="y", linestyle="--", linewidth=0.6, alpha=0.6)
+    style_axis(ax, grid_axis="y")
 
     # Note: only a precomputed Cp result is currently available in the tutorial folder.
     fig.text(
@@ -611,11 +691,11 @@ def run_cp_analysis(
         0.02,
         "Current tutorial input includes a precomputed Cp value file. "
         "If the raw enthalpy-temperature dataset is added later, this notebook can be extended to reproduce the full fit.",
-        fontsize=10,
+        fontsize=10.5,
     )
 
     if save_figure:
-        fig.savefig(output_dir(root) / "specific_heat_capacity_summary.png", dpi=220)
+        fig.savefig(output_dir(root) / "specific_heat_capacity_summary.png")
 
     print_section("Specific Heat Capacity")
     print(f"Sample: {sample_name}")
