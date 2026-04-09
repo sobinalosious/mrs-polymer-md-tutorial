@@ -1,0 +1,11 @@
+name: polymer-md-tutorial
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - jupyterlab
+  - ipykernel
+  - numpy
+  - pandas
+  - scipy
+  - matplotlib
