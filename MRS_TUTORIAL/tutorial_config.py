@@ -25,5 +25,6 @@ TC_CONFIG = {
 
 CP_CONFIG = {
     "sample_name": "Tutorial Polymer",
-    "cp_result_file": "CP/cp_result.dat",
+    "cp_data_file": "CP/cp_enthalpy_temperature_data.dat",
+    "num_blocks": 100,
 }

@@ -89,7 +89,7 @@ def check_tutorial_setup(root: Path | str | None = None) -> dict[str, Any]:
         root / "TC" / "tc_thermo_data.dat",
         root / "TC" / "tc_temperature_profile.dat",
         root / "DC" / "dc_dipole_fluctuation_data.dat",
-        root / "CP" / "cp_result.dat",
+        root / "CP" / "cp_enthalpy_temperature_data.dat",
     ]
     missing_required = [str(path.relative_to(root)) for path in required if not path.exists()]
     print_section("Tutorial File Check")
@@ -660,38 +660,117 @@ def run_tc_analysis(
 def run_cp_analysis(
     root: Path | str | None = None,
     sample_name: str = "Tutorial Polymer",
-    cp_result_file: str = "CP/cp_result.dat",
+    cp_data_file: str = "CP/cp_enthalpy_temperature_data.dat",
+    num_blocks: int = 100,
     save_figure: bool = True,
 ) -> dict[str, Any]:
     root = tutorial_root() if root is None else Path(root)
     use_workshop_style()
 
-    cp_path = root / cp_result_file
-    cp_value = float(np.loadtxt(cp_path))
+    cp_path = root / cp_data_file
+    data = np.loadtxt(cp_path, comments="#")
+    if data.ndim == 1:
+        data = data.reshape(-1, 5)
 
-    fig, ax = plt.subplots(figsize=(8.8, 5.6), constrained_layout=True)
-    ax.bar(["Cp"], [cp_value], width=0.55, color="#b91c1c", edgecolor="#7f1d1d", linewidth=1.1)
-    ax.set_ylabel("Specific heat capacity, Cp (J kg$^{-1}$ K$^{-1}$)")
-    ax.set_title(f"Specific Heat Capacity Tutorial: {sample_name}")
-    ax.set_ylim(0, cp_value * 1.35)
-    ax.text(
-        0,
-        cp_value * 1.03,
-        f"{cp_value:.2f} J kg$^{{-1}}$ K$^{{-1}}$",
-        ha="center",
-        va="bottom",
-        fontsize=13.5,
-        fontweight="bold",
+    temperature = data[:, 0]
+    total_energy_kcal = data[:, 1]
+    volume_ang3 = data[:, 3]
+    density_gcc = data[:, 4]
+
+    total_steps = len(data)
+    block_size = total_steps // num_blocks
+    if block_size < 1:
+        raise ValueError("num_blocks is too large for the Cp dataset.")
+
+    ang3_to_m3 = 1e-30
+    kcal_to_j = 4184.0
+    atm_to_pa = 101325.0
+    avogadro_number = 6.02214076e23
+
+    volume_m3 = volume_ang3 * ang3_to_m3
+    density_kg_m3 = density_gcc * 1000.0
+    energy_j = total_energy_kcal * kcal_to_j / avogadro_number
+    enthalpy_j = energy_j + atm_to_pa * volume_m3
+    mass_kg = volume_m3 * density_kg_m3
+
+    avg_temperatures = []
+    avg_enthalpies = []
+    avg_masses = []
+    for i in range(num_blocks):
+        block = data[i * block_size : (i + 1) * block_size]
+        if len(block) == 0:
+            continue
+        t_block = block[:, 0]
+        e_block = block[:, 1]
+        v_block = block[:, 3] * ang3_to_m3
+        rho_block = block[:, 4] * 1000.0
+        e_j_block = e_block * kcal_to_j / avogadro_number
+        h_j_block = e_j_block + atm_to_pa * v_block
+        m_block = v_block * rho_block
+        avg_temperatures.append(np.mean(t_block))
+        avg_enthalpies.append(np.mean(h_j_block))
+        avg_masses.append(np.mean(m_block))
+
+    avg_temperatures = np.array(avg_temperatures)
+    avg_enthalpies = np.array(avg_enthalpies)
+    avg_masses = np.array(avg_masses)
+
+    slope_raw, intercept_raw = np.polyfit(temperature, enthalpy_j, 1)
+    fit_raw = slope_raw * temperature + intercept_raw
+    slope_avg, intercept_avg = np.polyfit(avg_temperatures, avg_enthalpies, 1)
+    fit_avg = slope_avg * avg_temperatures + intercept_avg
+    cp_value = float(slope_avg / np.mean(avg_masses))
+
+    fig, ax = plt.subplots(figsize=(8.8, 5.8), constrained_layout=True)
+    ax.scatter(
+        temperature[:: max(1, len(temperature) // 2000)],
+        enthalpy_j[:: max(1, len(enthalpy_j) // 2000)],
+        s=10,
+        color="#cbd5e1",
+        alpha=0.55,
+        label="Raw data",
     )
-    style_axis(ax, grid_axis="y")
-
-    # Note: only a precomputed Cp result is currently available in the tutorial folder.
-    fig.text(
-        0.12,
-        0.02,
-        "Current tutorial input includes a precomputed Cp value file. "
-        "If the raw enthalpy-temperature dataset is added later, this notebook can be extended to reproduce the full fit.",
-        fontsize=10.5,
+    ax.plot(
+        np.sort(temperature),
+        fit_raw[np.argsort(temperature)],
+        color="#94a3b8",
+        linewidth=1.6,
+        linestyle="--",
+        label="Raw-data fit",
+    )
+    ax.scatter(
+        avg_temperatures,
+        avg_enthalpies,
+        s=42,
+        color="#b91c1c",
+        edgecolors="white",
+        linewidths=0.8,
+        label="Block averages",
+        zorder=3,
+    )
+    ax.plot(
+        avg_temperatures,
+        fit_avg,
+        color="#7f1d1d",
+        linewidth=2.5,
+        label="Block-averaged fit",
+    )
+    ax.set_xlabel("Temperature (K)")
+    ax.set_ylabel("Enthalpy (J)")
+    ax.set_title(f"Enthalpy vs Temperature: {sample_name}")
+    ax.legend(loc="best")
+    style_axis(ax)
+    ax.text(
+        0.04,
+        0.96,
+        f"$C_p$ = {cp_value:.2f} J kg$^{{-1}}$ K$^{{-1}}$\n"
+        f"Blocks = {len(avg_temperatures)}\n"
+        f"dH/dT = {slope_avg:.3e} J K$^{{-1}}$",
+        transform=ax.transAxes,
+        va="top",
+        ha="left",
+        fontsize=11.0,
+        bbox={"facecolor": "white", "edgecolor": "#cbd5e1", "boxstyle": "round,pad=0.45"},
     )
 
     if save_figure:
@@ -700,8 +779,10 @@ def run_cp_analysis(
     print_section("Specific Heat Capacity")
     print(f"Sample: {sample_name}")
     print(f"Input file: {cp_path.name}")
+    print(f"Raw-data slope (dH/dT) = {slope_raw:.4e} J/K")
+    print(f"Block-fit slope (dH/dT) = {slope_avg:.4e} J/K")
+    print(f"Mean mass per block = {np.mean(avg_masses):.4e} kg")
     print(f"Cp = {cp_value:.4f} J/(kg·K)")
-    print("Current tutorial input: precomputed Cp result")
 
     return {
         "sample_name": sample_name,

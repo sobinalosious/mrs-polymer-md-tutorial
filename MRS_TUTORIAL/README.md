@@ -79,9 +79,9 @@ That keeps the exercise aligned with the workshop goal of teaching how dielectri
 
 For specific heat capacity, the current folder includes a precomputed Cp result file:
 
-- `CP/cp_result.dat`
+- `CP/cp_enthalpy_temperature_data.dat`
 
-If a raw enthalpy-temperature dataset is added later, the Cp notebook can be upgraded to reproduce the fit directly.
+The Cp notebook uses this file to generate an enthalpy-vs-temperature plot and compute Cp from the fitted slope.
 
 ## Teaching Notes
 
