@@ -22,3 +22,8 @@ TC_CONFIG = {
     "num_points": 2000,
     "num_sets": 8,
 }
+
+CP_CONFIG = {
+    "sample_name": "Tutorial Polymer",
+    "cp_result_file": "CP/cp_result.dat",
+}

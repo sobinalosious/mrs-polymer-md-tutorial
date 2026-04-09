@@ -5,6 +5,7 @@ This folder is an analysis-only tutorial for three polymer properties derived fr
 - glass transition temperature (`Tg`)
 - dielectric constant (`DC`)
 - thermal conductivity (`TC`)
+- specific heat capacity (`Cp`)
 
 The tutorial is designed for conference or workshop delivery with a small, self-contained analysis environment that does not require LAMMPS, HPC access, or the full polymer-generation workflow.
 
@@ -62,6 +63,7 @@ jupyter lab
 2. `01_Glass_Transition_Temperature.ipynb`
 3. `02_Dielectric_Constant.ipynb`
 4. `03_Thermal_Conductivity.ipynb`
+5. `04_Specific_Heat_Capacity.ipynb`
 
 ## Inputs You Should Review Before Sharing
 
@@ -74,6 +76,12 @@ For dielectric constant, this tutorial intentionally focuses only on the dipole 
 - `DC/dc_dipole_fluctuation_data.dat`
 
 That keeps the exercise aligned with the workshop goal of teaching how dielectric response is extracted from MD fluctuations.
+
+For specific heat capacity, the current folder includes a precomputed Cp result file:
+
+- `CP/cp_result.dat`
+
+If a raw enthalpy-temperature dataset is added later, the Cp notebook can be upgraded to reproduce the fit directly.
 
 ## Teaching Notes
 

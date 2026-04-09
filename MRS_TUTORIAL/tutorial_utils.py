@@ -66,6 +66,7 @@ def check_tutorial_setup(root: Path | str | None = None) -> dict[str, Any]:
         root / "TC" / "tc_thermo_data.dat",
         root / "TC" / "tc_temperature_profile.dat",
         root / "DC" / "dc_dipole_fluctuation_data.dat",
+        root / "CP" / "cp_result.dat",
     ]
     missing_required = [str(path.relative_to(root)) for path in required if not path.exists()]
     print_section("Tutorial File Check")
@@ -572,5 +573,58 @@ def run_tc_analysis(
         "tc_mean": tc_mean,
         "tc_std": tc_std,
         "records": records,
+        "figure": fig,
+    }
+
+
+def run_cp_analysis(
+    root: Path | str | None = None,
+    sample_name: str = "Tutorial Polymer",
+    cp_result_file: str = "CP/cp_result.dat",
+    save_figure: bool = True,
+) -> dict[str, Any]:
+    root = tutorial_root() if root is None else Path(root)
+    use_workshop_style()
+
+    cp_path = root / cp_result_file
+    cp_value = float(np.loadtxt(cp_path))
+
+    fig, ax = plt.subplots(figsize=(8.5, 5.5))
+    ax.bar(["Cp"], [cp_value], width=0.55, color="#dc2626")
+    ax.set_ylabel("Specific heat capacity, Cp (J kg$^{-1}$ K$^{-1}$)")
+    ax.set_title(f"Specific Heat Capacity Tutorial: {sample_name}")
+    ax.set_ylim(0, cp_value * 1.35)
+    ax.text(
+        0,
+        cp_value * 1.03,
+        f"{cp_value:.2f} J kg$^{{-1}}$ K$^{{-1}}$",
+        ha="center",
+        va="bottom",
+        fontsize=13,
+        fontweight="bold",
+    )
+    ax.grid(axis="y", linestyle="--", linewidth=0.6, alpha=0.6)
+
+    # Note: only a precomputed Cp result is currently available in the tutorial folder.
+    fig.text(
+        0.12,
+        0.02,
+        "Current tutorial input includes a precomputed Cp value file. "
+        "If the raw enthalpy-temperature dataset is added later, this notebook can be extended to reproduce the full fit.",
+        fontsize=10,
+    )
+
+    if save_figure:
+        fig.savefig(output_dir(root) / "specific_heat_capacity_summary.png", dpi=220)
+
+    print_section("Specific Heat Capacity")
+    print(f"Sample: {sample_name}")
+    print(f"Input file: {cp_path.name}")
+    print(f"Cp = {cp_value:.4f} J/(kg·K)")
+    print("Current tutorial input: precomputed Cp result")
+
+    return {
+        "sample_name": sample_name,
+        "cp_value": cp_value,
         "figure": fig,
     }

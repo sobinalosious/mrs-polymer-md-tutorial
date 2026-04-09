@@ -7,6 +7,7 @@ The tutorial focuses on:
 - glass transition temperature
 - dielectric constant (dipole component)
 - thermal conductivity
+- specific heat capacity
 
 ## Start Here
 
@@ -16,7 +17,7 @@ Open the workshop materials in:
 
 ## Binder Launch
 
-After the repository is published, launch Binder with:
+Launch Binder with:
 
 ```text
 https://mybinder.org/v2/gh/sobinalosious/mrs-polymer-md-tutorial/main?urlpath=lab/tree/MRS_TUTORIAL/notebooks/00_Start_Here.ipynb
