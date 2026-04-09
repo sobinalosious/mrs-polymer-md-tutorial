@@ -34,6 +34,7 @@ def use_workshop_style() -> None:
 
     plt.rcParams.update(
         {
+            "figure.dpi": 160,
             "figure.facecolor": "white",
             "axes.facecolor": "#fcfcfa",
             "axes.edgecolor": "#2f3b52",
@@ -59,7 +60,7 @@ def use_workshop_style() -> None:
             "legend.framealpha": 0.95,
             "lines.linewidth": 2.3,
             "lines.markersize": 6,
-            "savefig.dpi": 300,
+            "savefig.dpi": 450,
             "savefig.bbox": "tight",
         }
     )
@@ -75,6 +76,11 @@ def style_axis(ax: plt.Axes, grid_axis: str = "both") -> None:
         ax.grid(axis="x")
     else:
         ax.grid(True)
+
+
+def save_figure_bundle(fig: plt.Figure, stem: Path) -> None:
+    fig.savefig(stem.with_suffix(".png"))
+    fig.savefig(stem.with_suffix(".svg"))
 
 
 def print_section(title: str) -> None:
@@ -273,7 +279,7 @@ def run_tg_analysis(
     fig.suptitle(f"Glass Transition Tutorial: {sample_name}", fontsize=16, fontweight="bold")
 
     if save_figure:
-        fig.savefig(output_dir(root) / "glass_transition_summary.png")
+        save_figure_bundle(fig, output_dir(root) / "glass_transition_summary")
 
     print_section("Glass Transition Temperature")
     print(f"Sample: {sample_name}")
@@ -382,7 +388,7 @@ def run_dc_analysis(
     fig.suptitle(f"Dielectric Constant Tutorial: {sample_name}", fontsize=16, fontweight="bold")
 
     if save_figure:
-        fig.savefig(output_dir(root) / "dielectric_constant_summary.png")
+        save_figure_bundle(fig, output_dir(root) / "dielectric_constant_summary")
 
     print_section("Dielectric Constant")
     print(f"Sample: {sample_name}")
@@ -557,10 +563,10 @@ def run_tc_analysis(
     rep_heat = representative["heat"]
     rep_gradient = representative["gradient"]
 
-    fig, axes = plt.subplots(2, 2, figsize=(13.5, 9.2), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(16.5, 5.2), constrained_layout=True)
 
-    axes[0, 0].plot(rep_heat["time"] * 1e12, rep_heat["energy"], color="#1d4ed8", linewidth=2.4, label="Heat transferred")
-    axes[0, 0].plot(
+    axes[0].plot(rep_heat["time"] * 1e12, rep_heat["energy"], color="#1d4ed8", linewidth=2.4, label="Heat transferred")
+    axes[0].plot(
         rep_heat["time"] * 1e12,
         rep_heat["slope"] * rep_heat["time"] + rep_heat["intercept"],
         color="#dc2626",
@@ -568,13 +574,13 @@ def run_tc_analysis(
         linewidth=2.2,
         label=f"Linear fit (R = {rep_heat['r_value']:.3f})",
     )
-    axes[0, 0].set_title(f"Representative Heat-Flux Fit (window {representative['window']})")
-    axes[0, 0].set_xlabel("Time (ps)")
-    axes[0, 0].set_ylabel("Accumulated energy (J)")
-    axes[0, 0].legend(loc="best")
-    style_axis(axes[0, 0])
+    axes[0].set_title(f"Representative Heat-Flux Fit (window {representative['window']})")
+    axes[0].set_xlabel("Time (ps)")
+    axes[0].set_ylabel("Accumulated energy (J)")
+    axes[0].legend(loc="best")
+    style_axis(axes[0])
 
-    axes[0, 1].scatter(
+    axes[1].scatter(
         rep_gradient["distance"],
         rep_gradient["temperature"],
         s=34,
@@ -583,7 +589,7 @@ def run_tc_analysis(
         linewidths=0.5,
         label="Temperature profile",
     )
-    axes[0, 1].plot(
+    axes[1].plot(
         rep_gradient["distance"],
         rep_gradient["slope"] * rep_gradient["distance"] + rep_gradient["intercept"],
         color="#f97316",
@@ -591,14 +597,14 @@ def run_tc_analysis(
         linewidth=2.2,
         label=f"Linear fit (R = {rep_gradient['r_value']:.3f})",
     )
-    axes[0, 1].set_title(f"Representative Temperature Gradient (window {representative['window']})")
-    axes[0, 1].set_xlabel("Reduced position")
-    axes[0, 1].set_ylabel("Temperature (K)")
-    axes[0, 1].legend(loc="best")
-    style_axis(axes[0, 1])
+    axes[1].set_title(f"Representative Temperature Gradient (window {representative['window']})")
+    axes[1].set_xlabel("Reduced position")
+    axes[1].set_ylabel("Temperature (K)")
+    axes[1].legend(loc="best")
+    style_axis(axes[1])
 
     window_ids = [record["window"] for record in records]
-    axes[1, 0].plot(
+    axes[2].plot(
         window_ids,
         tc_values,
         marker="o",
@@ -607,35 +613,18 @@ def run_tc_analysis(
         markerfacecolor="white",
         markeredgewidth=1.2,
     )
-    axes[1, 0].axhspan(tc_mean - tc_std, tc_mean + tc_std, color="#ddd6fe", alpha=0.5, label="Mean ± std")
-    axes[1, 0].axhline(tc_mean, color="#6d28d9", linestyle="--", linewidth=1.8, label=f"Mean = {tc_mean:.4e}")
-    axes[1, 0].set_title("Window-by-Window Thermal Conductivity")
-    axes[1, 0].set_xlabel("Window")
-    axes[1, 0].set_ylabel("Thermal conductivity")
-    axes[1, 0].legend(loc="best")
-    style_axis(axes[1, 0], grid_axis="y")
-
-    cumulative = np.cumsum(tc_values) / np.arange(1, len(tc_values) + 1)
-    axes[1, 1].plot(
-        np.arange(1, len(tc_values) + 1),
-        cumulative,
-        marker="o",
-        linewidth=2.4,
-        color="#0f766e",
-        markerfacecolor="white",
-        markeredgewidth=1.2,
-    )
-    axes[1, 1].axhline(tc_mean, color="#0f766e", linestyle="--", linewidth=1.8, label="Final mean")
-    axes[1, 1].set_title("Convergence of the Running Mean")
-    axes[1, 1].set_xlabel("Number of windows included")
-    axes[1, 1].set_ylabel("Running mean thermal conductivity")
-    axes[1, 1].legend(loc="best")
-    style_axis(axes[1, 1], grid_axis="y")
+    axes[2].axhspan(tc_mean - tc_std, tc_mean + tc_std, color="#ddd6fe", alpha=0.5, label="Mean ± std")
+    axes[2].axhline(tc_mean, color="#6d28d9", linestyle="--", linewidth=1.8, label=f"Mean = {tc_mean:.4e}")
+    axes[2].set_title("Window-by-Window Thermal Conductivity")
+    axes[2].set_xlabel("Window")
+    axes[2].set_ylabel("Thermal conductivity")
+    axes[2].legend(loc="best")
+    style_axis(axes[2], grid_axis="y")
 
     fig.suptitle(f"Thermal Conductivity Tutorial: {sample_name}", fontsize=16, fontweight="bold")
 
     if save_figure:
-        fig.savefig(output_dir(root) / "thermal_conductivity_summary.png")
+        save_figure_bundle(fig, output_dir(root) / "thermal_conductivity_summary")
 
     print_section("Thermal Conductivity")
     print(f"Sample: {sample_name}")
@@ -774,7 +763,7 @@ def run_cp_analysis(
     )
 
     if save_figure:
-        fig.savefig(output_dir(root) / "specific_heat_capacity_summary.png")
+        save_figure_bundle(fig, output_dir(root) / "specific_heat_capacity_summary")
 
     print_section("Specific Heat Capacity")
     print(f"Sample: {sample_name}")
