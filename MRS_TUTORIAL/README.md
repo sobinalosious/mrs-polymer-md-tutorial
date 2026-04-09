@@ -1,16 +1,16 @@
 # Polymer MD Property Tutorial
 
-This folder is a student-facing, analysis-only tutorial for three polymer properties derived from precomputed molecular dynamics outputs:
+This folder is an analysis-only tutorial for three polymer properties derived from precomputed molecular dynamics outputs:
 
 - glass transition temperature (`Tg`)
 - dielectric constant (`DC`)
 - thermal conductivity (`TC`)
 
-The tutorial is designed for conference or workshop delivery where students should run a small, self-contained analysis environment without needing LAMMPS, HPC access, or the full polymer-generation workflow.
+The tutorial is designed for conference or workshop delivery with a small, self-contained analysis environment that does not require LAMMPS, HPC access, or the full polymer-generation workflow.
 
-## What Students Do
+## How To Use
 
-Students open the notebooks in `notebooks/` and run them top-to-bottom.
+Open the notebooks in `notebooks/` and run them top-to-bottom.
 
 Each notebook:
 
@@ -27,7 +27,7 @@ MRS_TUTORIAL/
   TC/                         raw thermal-conductivity MD outputs
   TG/                         raw glass-transition MD outputs
   DC/                         raw dielectric MD outputs
-  notebooks/                  student notebooks
+  notebooks/                  tutorial notebooks
   outputs/                    figures saved during notebook runs
   tutorial_config.py          editable tutorial inputs
   tutorial_utils.py           shared analysis + plotting helpers

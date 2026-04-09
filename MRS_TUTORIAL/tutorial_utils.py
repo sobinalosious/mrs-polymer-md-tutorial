@@ -316,7 +316,7 @@ def run_dc_analysis(
         0.0,
         0.9,
         "This tutorial focuses only on the dipole-fluctuation contribution.\n\n"
-        "Students should take away:\n"
+        "Key takeaway:\n"
         "- the total dipole moment fluctuates during MD\n"
         "- the variance of that dipole is linked to dielectric response\n"
         "- better sampling gives a more stable dielectric estimate",
