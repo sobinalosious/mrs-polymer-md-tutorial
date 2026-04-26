@@ -23,6 +23,9 @@ Launch Binder with:
 https://mybinder.org/v2/gh/sobinalosious/mrs-polymer-md-tutorial/main?urlpath=lab/tree/MRS_TUTORIAL/notebooks/00_Start_Here.ipynb
 ```
 
+```text
+https://docs.google.com/presentation/d/1MEKcsnWCjD4v__0-haraM-JyMcWIQcruGLQPQvniFKE/edit?usp=sharing```
+
 ## Repository Layout
 
 ```text
